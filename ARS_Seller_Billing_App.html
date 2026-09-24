@@ -524,13 +524,13 @@
     }
     #printArea .br-table{ width:100% !important; table-layout:fixed !important; }
     /* Item names are the long text, so they get the most room to stay on one
-       line. Price and Qty only ever hold short values, so they are kept tight
-       and sit closer to Total, which stays wide enough for amounts like
-       ₹4,750 and never wraps. */
-    #printArea .br-table .br-col-item{ width:52% !important; }
-    #printArea .br-table .br-col-price{ width:14% !important; white-space:nowrap !important; }
-    #printArea .br-table .br-col-qty{ width:8% !important; white-space:nowrap !important; }
-    #printArea .br-table .br-col-total{ width:26% !important; white-space:nowrap !important; }
+       line. Price and Qty are kept equal to each other (same width, same
+       text size) and sit close to Total near the right edge, which stays
+       wide enough for amounts like ₹4,750 and never wraps. */
+    #printArea .br-table .br-col-item{ width:54% !important; }
+    #printArea .br-table .br-col-price{ width:12% !important; white-space:nowrap !important; }
+    #printArea .br-table .br-col-qty{ width:12% !important; white-space:nowrap !important; }
+    #printArea .br-table .br-col-total{ width:22% !important; white-space:nowrap !important; }
     /* Keep the summary/total lines from colliding at narrow widths. */
     #printArea .br-row, #printArea .br-total-row{ gap:6px !important; }
     #printArea .br-row span:last-child,
@@ -566,11 +566,17 @@
   .br-table th{text-align:left; font-size:10px; color:#000; background:#fff; padding:4px 6px; border-bottom:1.5px solid #000; overflow:hidden; box-sizing:border-box;}
   .br-table th.num, .br-table td.num{text-align:right;}
   .br-table td{padding:4px 6px; border-bottom:1px dashed #999; box-sizing:border-box; overflow:hidden; word-break:break-word;}
-  .br-table td.num, .br-table th.num{white-space:nowrap; overflow:visible;}
+  /* Price/Qty/Total sit at the right edge of the paper — a tighter right-hand
+     padding pulls them closer to the physical edge instead of floating with
+     a wide gap after the (now bigger) item column. */
+  .br-table td.num, .br-table th.num{white-space:nowrap; overflow:visible; padding-left:3px; padding-right:2px;}
   .br-table tr:nth-child(even) td{background:#fff;}
-  .br-table .br-col-item{width:46%;}
-  .br-table .br-col-price{width:18%;}
-  .br-table .br-col-qty{width:12%;}
+  /* Item gets noticeably more room to breathe; Price and Qty are given the
+     SAME width as each other (and the same text size, set inline per-row)
+     so the three number columns read as one consistent right-hand block. */
+  .br-table .br-col-item{width:50%;}
+  .br-table .br-col-price{width:13%;}
+  .br-table .br-col-qty{width:13%;}
   .br-table .br-col-total{width:24%;}
   .br-en{color:#000; font-size:9.5px;}
   .br-summary{padding:6px 10px 0; box-sizing:border-box;}
@@ -860,16 +866,36 @@
     <div class="bill-actions">
       <button class="btn-complete" id="cashBtn" onclick="completeSale('cash')">&#128181; Cash</button>
       <button class="btn-complete" id="upiBtn" onclick="completeSaleUPI()" style="background:#1ebe5d;">&#128241; UPI</button>
+      <button class="btn-complete" id="splitBtn" onclick="openSplitPayment()" style="background:#7a3fa0;">&#128181;+&#128241; Split</button>
       <button class="btn-whatsapp" onclick="shareBillWhatsApp()" title="WhatsApp: shares the bill as an image — if a customer number is entered above, their chat is opened first" aria-label="Share bill via WhatsApp">
         <svg viewBox="0 0 32 32" width="20" height="20" fill="#fff"><path d="M16.04 3C9.13 3 3.54 8.58 3.54 15.48c0 2.5.7 4.84 1.92 6.83L3 29l6.9-2.4a12.95 12.95 0 0 0 6.14 1.55h.01c6.9 0 12.5-5.58 12.5-12.48S22.95 3 16.04 3Zm0 22.7h-.01a10.4 10.4 0 0 1-5.3-1.45l-.38-.22-3.96 1.38 1.4-3.86-.25-.4a10.18 10.18 0 0 1-1.57-5.47C5.97 9.96 10.5 5.45 16.05 5.45c2.8 0 5.43 1.1 7.4 3.08a10.36 10.36 0 0 1 3.07 7.36c0 5.51-4.53 10-9.48 10Zm5.78-7.5c-.32-.16-1.88-.93-2.17-1.03-.29-.11-.5-.16-.71.16-.21.32-.81 1.03-1 1.24-.18.21-.37.24-.68.08-.32-.16-1.34-.49-2.55-1.57-.94-.84-1.58-1.87-1.76-2.19-.18-.32-.02-.49.14-.65.15-.15.32-.39.48-.58.16-.19.21-.32.32-.53.11-.21.05-.4-.03-.56-.08-.16-.7-1.69-.96-2.32-.25-.6-.5-.52-.7-.53-.18-.01-.4-.01-.6-.01-.21 0-.55.08-.85.4-.29.32-1.12 1.1-1.12 2.67 0 1.58 1.15 3.1 1.31 3.32.16.21 2.2 3.36 5.34 4.58 3.13 1.22 3.13.82 3.7.77.56-.05 1.88-.77 2.15-1.5.26-.74.26-1.38.18-1.5-.08-.13-.29-.21-.61-.37Z"/></svg>
       </button>
       <button class="btn-print" onclick="printBill()" title="Print this bill on a connected printer" aria-label="Print bill">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="#fff"><path d="M19 8h-1V3H6v5H5a3 3 0 0 0-3 3v6h4v4h12v-4h4v-6a3 3 0 0 0-3-3ZM8 5h8v3H8V5Zm8 14H8v-5h8v5Zm3-7.5a1 1 0 1 1-1-1 1 1 0 0 1 1 1Z"/></svg>
       </button>
-      <button class="btn-print" id="btPrintBtn" onclick="bluetoothPrintBill()" style="background:#0a63c9;" title="Print directly to a Bluetooth thermal printer" aria-label="Bluetooth print">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="#fff"><path d="M12 2h.8l4.9 4.9-3.9 3.9 3.9 3.9L12.8 22H12v-7.2l-3.6 3.6-1.4-1.4 4.6-4.6V2Zm1.6 3.5v3.1l1.6-1.6-1.6-1.5Zm0 9.9v3.1l1.6-1.6-1.6-1.5ZM6.4 7.3 7.8 5.9 9.9 8 8.5 9.4 6.4 7.3Z"/></svg>
-      </button>
       <button class="btn-close" onclick="closeBill()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= CASH + UPI SPLIT PAYMENT MODAL ================= -->
+<div class="modal-overlay" id="splitPaymentOverlay">
+  <div class="item-edit-sheet">
+    <div class="bill-head">
+      <div class="bn">Split Payment — Cash + UPI</div>
+    </div>
+    <div class="item-edit-body">
+      <div style="text-align:center; font-size:13px; color:var(--ink-soft); margin-bottom:12px;">
+        Total Bill Amount<br><b style="color:var(--maroon); font-size:19px;">&#8377;<span id="splitTotalAmount">0</span></b>
+      </div>
+      <label class="field-label">UPI Amount (&#8377;)</label>
+      <input type="number" min="0" id="splitUpiAmount" placeholder="0" oninput="onSplitUpiChanged()">
+      <label class="field-label">Cash Amount (&#8377;) — fills with the remaining balance</label>
+      <input type="number" min="0" id="splitCashAmount" placeholder="0" oninput="onSplitCashChanged()">
+    </div>
+    <div class="confirm-actions" style="padding:6px 18px 18px;">
+      <button class="btn-confirm-no" onclick="closeSplitPayment()">Cancel</button>
+      <button class="btn-confirm-yes" onclick="confirmSplitPayment()">&#10003; Confirm</button>
     </div>
   </div>
 </div>
@@ -1495,6 +1521,15 @@ function getInvItem(ci, ii){
 function getPrice(ci, ii){ return getInvItem(ci, ii).price; }
 function getUnit(ci, ii){ return getInvItem(ci, ii).unit || 'box'; }
 function saleStatus(s){ return s.status || 'confirmed'; }
+/* A sale's cash/UPI split — for a plain 'cash' or 'upi' sale this is just the
+   whole total on one side; for a 'split' sale it uses the two amounts that
+   were actually recorded at checkout. */
+function saleCashAmount(s){ return s.paymentMethod === 'split' ? (s.cashAmount || 0) : (s.paymentMethod !== 'upi' ? (s.total || 0) : 0); }
+function saleUpiAmount(s){ return s.paymentMethod === 'split' ? (s.upiAmount || 0) : (s.paymentMethod === 'upi' ? (s.total || 0) : 0); }
+function paymentMethodLabel(s){
+  if(s.paymentMethod === 'split') return 'Cash ₹' + (s.cashAmount||0).toLocaleString('en-IN') + ' + UPI ₹' + (s.upiAmount||0).toLocaleString('en-IN');
+  return s.paymentMethod === 'upi' ? 'UPI' : 'Cash';
+}
 function getItemName(ci, ii){
   const inv = getInvItem(ci, ii);
   const item = CATEGORIES[ci].items[ii];
@@ -1955,7 +1990,7 @@ async function buildPricingWorkbookBlob(){
       s.discount || 0,
       s.total || 0,
       s.paidAmount || '',
-      s.paymentMethod === 'upi' ? 'UPI' : 'Cash',
+      paymentMethodLabel(s),
       s.buyerPhone || '',
       detail
     ]);
@@ -2250,6 +2285,8 @@ function openBill(preserveEntries){
   document.getElementById('upiBtn').disabled = false;
   document.getElementById('cashBtn').textContent = '\u{1F4B5} Cash';
   document.getElementById('upiBtn').textContent = '\u{1F4F1} UPI';
+  const splitBtnReset = document.getElementById('splitBtn');
+  if(splitBtnReset){ splitBtnReset.disabled = false; splitBtnReset.textContent = SPLIT_BTN_LABEL; }
   document.getElementById('billOverlay').classList.add('show');
 }
 
@@ -2657,7 +2694,11 @@ function closePriceListPreview(){
   if(vp) vp.setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover');
 }
 
-function completeSale(paymentMethod){
+const SPLIT_BTN_LABEL = '\u{1F4B5}+\u{1F4F1} Split';
+
+/* splitDetails (optional) = {cashAmount, upiAmount} — only set when the sale
+   was paid partly in cash and partly by UPI via the Split Payment modal. */
+function completeSale(paymentMethod, splitDetails){
   const { count, subtotal, discount, grand, percent, paidAmount } = renderBillTotals();
   if(count === 0) return;
   const items = [];
@@ -2670,6 +2711,9 @@ function completeSale(paymentMethod){
     }
   }));
   const buyerPhone = document.getElementById('billCustomerPhone').value.trim();
+  const finalMethod = paymentMethod || 'cash';
+  const cashAmount = splitDetails ? splitDetails.cashAmount : (finalMethod === 'upi' ? 0 : (paidAmount || grand));
+  const upiAmount = splitDetails ? splitDetails.upiAmount : (finalMethod === 'upi' ? (paidAmount || grand) : 0);
   const newSale = {
     id: 'S' + Date.now(),
     billNo: getNextBillNo(),
@@ -2677,7 +2721,8 @@ function completeSale(paymentMethod){
     time: new Date().toISOString(),
     items, subtotal, discount, discountPercent: percent, total: grand,
     paidAmount: paidAmount || null,
-    paymentMethod: paymentMethod || 'cash',
+    paymentMethod: finalMethod,
+    cashAmount, upiAmount,
     buyerPhone: buyerPhone || null,
     status: 'confirmed'
   };
@@ -2695,8 +2740,13 @@ function completeSale(paymentMethod){
   document.getElementById('saleSavedMsg').classList.remove('hidden');
   document.getElementById('cashBtn').disabled = true;
   document.getElementById('upiBtn').disabled = true;
-  document.getElementById('cashBtn').textContent = paymentMethod === 'upi' ? '\u{1F4B5} Cash' : 'Saved \u2713';
-  document.getElementById('upiBtn').textContent = paymentMethod === 'upi' ? 'Saved \u2713' : '\u{1F4F1} UPI';
+  document.getElementById('cashBtn').textContent = finalMethod === 'cash' ? 'Saved \u2713' : '\u{1F4B5} Cash';
+  document.getElementById('upiBtn').textContent = finalMethod === 'upi' ? 'Saved \u2713' : '\u{1F4F1} UPI';
+  const splitBtnDone = document.getElementById('splitBtn');
+  if(splitBtnDone){
+    splitBtnDone.disabled = true;
+    splitBtnDone.textContent = finalMethod === 'split' ? 'Saved \u2713' : SPLIT_BTN_LABEL;
+  }
   render();
 }
 
@@ -2708,6 +2758,63 @@ function completeSaleUPI(){
     return;
   }
   openUpiQr(t.paidAmount || t.grand, () => completeSale('upi'));
+}
+
+/* ---------------- CASH + UPI SPLIT PAYMENT ----------------
+   Lets the seller divide one bill's total between Cash and UPI — e.g. the
+   customer pays part by scanning the UPI QR and the rest in cash. Filling in
+   the UPI amount automatically fills the Cash field with whatever remains of
+   the bill (and vice versa), so the two always add up to the total. */
+let _splitTotal = 0;
+function openSplitPayment(){
+  const t = renderBillTotals();
+  if(t.count === 0) return;
+  _splitTotal = t.paidAmount || t.grand;
+  document.getElementById('splitTotalAmount').textContent = _splitTotal.toLocaleString('en-IN');
+  document.getElementById('splitUpiAmount').value = '';
+  document.getElementById('splitCashAmount').value = _splitTotal;
+  document.getElementById('splitPaymentOverlay').classList.add('show');
+}
+function closeSplitPayment(){
+  document.getElementById('splitPaymentOverlay').classList.remove('show');
+}
+function onSplitUpiChanged(){
+  let upi = parseFloat(document.getElementById('splitUpiAmount').value);
+  if(isNaN(upi) || upi < 0) upi = 0;
+  if(upi > _splitTotal) upi = _splitTotal;
+  document.getElementById('splitUpiAmount').value = upi;
+  document.getElementById('splitCashAmount').value = Math.round((_splitTotal - upi) * 100) / 100;
+}
+function onSplitCashChanged(){
+  let cash = parseFloat(document.getElementById('splitCashAmount').value);
+  if(isNaN(cash) || cash < 0) cash = 0;
+  if(cash > _splitTotal) cash = _splitTotal;
+  document.getElementById('splitCashAmount').value = cash;
+  document.getElementById('splitUpiAmount').value = Math.round((_splitTotal - cash) * 100) / 100;
+}
+function confirmSplitPayment(){
+  const upiAmt = Math.round((parseFloat(document.getElementById('splitUpiAmount').value) || 0) * 100) / 100;
+  const cashAmt = Math.round((_splitTotal - upiAmt) * 100) / 100;
+
+  if(upiAmt <= 0){
+    // Nothing was put toward UPI — this is really just a cash sale.
+    closeSplitPayment();
+    completeSale('cash');
+    return;
+  }
+  if(cashAmt <= 0){
+    // The whole bill was put toward UPI — go through the normal UPI flow.
+    closeSplitPayment();
+    completeSaleUPI();
+    return;
+  }
+  if(!UPI.slot1.enabled || !UPI.slot1.id){
+    alert('No active UPI ID is configured. Please ask the admin to set one up under Admin → UPI Details.');
+    return;
+  }
+  closeSplitPayment();
+  // Only the UPI portion is charged via QR — the remainder is collected in cash.
+  openUpiQr(upiAmt, () => completeSale('split', { cashAmount: cashAmt, upiAmount: upiAmt }));
 }
 
 let _upiQrConfirmCallback = null;
@@ -2796,13 +2903,13 @@ async function sendBillToAdminSMS(sale){
     lines.push(`Subtotal: ₹${sale.subtotal.toLocaleString('en-IN')}`);
     if(sale.discount > 0) lines.push(`Discount: -₹${sale.discount.toLocaleString('en-IN')}`);
     lines.push(`Total: ₹${sale.total.toLocaleString('en-IN')}`);
-    lines.push(`Payment: ${sale.paymentMethod.toUpperCase()}`);
+    lines.push(`Payment: ${paymentMethodLabel(sale)}`);
     lines.push(new Date(sale.time).toLocaleString('en-IN', {dateStyle:'short', timeStyle:'short'}));
-    
+
     const message = lines.join('\n');
-    
+
     // Show in-app toast notification to admin (no auto SMS)
-    showAdminNotification(`📱 Bill ${sale.billNo} - ₹${sale.total.toLocaleString('en-IN')} (${sale.paymentMethod.toUpperCase()})`);
+    showAdminNotification(`📱 Bill ${sale.billNo} - ₹${sale.total.toLocaleString('en-IN')} (${paymentMethodLabel(sale)})`);
     
   } catch(e){
     console.log('Auto-send to admin: ' + (e && e.message ? e.message : 'unable to send'));
@@ -2890,7 +2997,7 @@ function renderHistoryList(){
     let itemsHtml = s.items.map(it=>`<div><span>${it.en} x${it.qty}</span><span>₹${(it.qty*it.price).toLocaleString('en-IN')}</span></div>`).join('');
     if(s.discount>0) itemsHtml += `<div class="sd-disc"><span>Discount${s.discountPercent?' ('+s.discountPercent+'%)':''}</span><span>-₹${s.discount.toLocaleString('en-IN')}</span></div>`;
     if(s.buyerPhone) itemsHtml += `<div><span>Customer Phone</span><span>${s.buyerPhone}</span></div>`;
-    if(s.paidAmount) itemsHtml += `<div><span>Paid Amount</span><span>₹${s.paidAmount.toLocaleString('en-IN')}${s.paymentMethod ? ' <span style="font-size:9px;color:#8a6a44;">('+(s.paymentMethod==='upi'?'UPI':'Cash')+')</span>' : ''}</span></div>`;
+    if(s.paidAmount) itemsHtml += `<div><span>Paid Amount</span><span>₹${s.paidAmount.toLocaleString('en-IN')}${s.paymentMethod ? ' <span style="font-size:9px;color:#8a6a44;">('+paymentMethodLabel(s)+')</span>' : ''}</span></div>`;
     html += `<div class="sale-card">
         <div class="sale-card-top" onclick="toggleSaleDetail('h-${s.id}')">
           <div>
@@ -2912,19 +3019,58 @@ function renderHistoryList(){
   return html;
 }
 
+/* ---- Dynamic single-line sizing for thermal receipt item names ----
+   The item column has a fixed width, but names vary a lot in length.
+   Rather than a fixed font-size (which either wraps long names onto a
+   3rd/4th line, or looks too small for short ones), this compares EVERY
+   item name in the bill and picks the single largest font size — one for
+   the Tamil line, one for the English line below it — that still lets the
+   longest name of each language fit on ONE line. Every row in the bill
+   then uses that same size, so the receipt reads as one consistent block:
+   exactly one Tamil line + one English line per item, never more. */
+let _receiptMeasureCtx = null;
+function receiptTextWidth(text, fontPx, fontFamily){
+  if(!_receiptMeasureCtx) _receiptMeasureCtx = document.createElement('canvas').getContext('2d');
+  _receiptMeasureCtx.font = fontPx + 'px ' + fontFamily;
+  return _receiptMeasureCtx.measureText(text || '').width;
+}
+function fitReceiptFontSize(texts, maxWidthPx, fontFamily, startPx, minPx){
+  let size = startPx;
+  let longest = '';
+  texts.forEach(t => { if((t||'').length > longest.length) longest = t || ''; });
+  while(size > minPx && receiptTextWidth(longest, size, fontFamily) > maxWidthPx){ size -= 0.25; }
+  return Math.round(Math.max(size, minPx) * 4) / 4;
+}
+
+const RECEIPT_FONT_FAMILY = "'Segoe UI', Roboto, 'Noto Sans Tamil', Arial, sans-serif";
+const RECEIPT_ITEM_COL_FRACTION = 0.50; // matches .br-col-item's width — printing widens this column further, so sizing against the narrower share/screen width always fits print too
+const RECEIPT_ITEM_TEXT_RESERVE_PX = 30; // room used up by the "1." index number, its margin, and the cell's own padding
+
 /* ---- Bill receipt PDF (reuses .br-page styles) for a single sale ---- */
 function buildBillReceiptHTML(s){
   const dt = new Date(s.time).toLocaleString('en-IN', {dateStyle:'medium', timeStyle:'short'});
+  const pageWidthPx = 226.772;
+  const availableTextWidth = Math.max(30, pageWidthPx * RECEIPT_ITEM_COL_FRACTION - RECEIPT_ITEM_TEXT_RESERVE_PX);
+  const taFontPx = fitReceiptFontSize(s.items.map(it=>it.ta), availableTextWidth, RECEIPT_FONT_FAMILY, 11, 6.5);
+  const enFontPx = fitReceiptFontSize(s.items.map(it=>it.en), availableTextWidth, RECEIPT_FONT_FAMILY, 9.5, 6);
+  // Price & Qty are the same size as each other but NOT bold; Total stays bold
+  // (the one number that matters most) and gets a touch of right padding so
+  // it sits a little in from the paper's very edge instead of flush against it.
+  const priceQtyStyle = 'font-size:10px; font-weight:500;';
+  const totalStyle = 'font-size:10px; font-weight:800; padding-right:8px;';
   // When a discount applies to the bill, show each line's discounted amount too,
   // so the customer can see what every item actually cost them.
-  let rows = s.items.map((it, idx) => `<tr><td class="br-col-item"><div style="display:flex; align-items:baseline; min-width:0;"><span style="flex:0 0 auto; margin-right:4px;">${idx+1}.</span><div style="min-width:0; word-break:break-word; overflow:hidden;">${it.ta}<br><span class="br-en">${it.en}</span></div></div></td>
-      <td class="num br-col-price">&#8377;${it.price.toLocaleString('en-IN')}</td><td class="num br-col-qty">${it.qty}</td>
-      <td class="num br-col-total">&#8377;${(it.price*it.qty).toLocaleString('en-IN')}</td></tr>`).join('');
+  let rows = s.items.map((it, idx) => `<tr><td class="br-col-item"><div style="display:flex; align-items:baseline; min-width:0;"><span style="flex:0 0 auto; margin-right:4px; font-size:${taFontPx}px;">${idx+1}.</span><div style="min-width:0; overflow:hidden;">
+        <div style="white-space:nowrap; overflow:hidden; font-size:${taFontPx}px; font-weight:700;">${it.ta}</div>
+        <div class="br-en" style="white-space:nowrap; overflow:hidden; font-size:${enFontPx}px;">${it.en}</div>
+      </div></div></td>
+      <td class="num br-col-price" style="${priceQtyStyle}">&#8377;${it.price.toLocaleString('en-IN')}</td><td class="num br-col-qty" style="${priceQtyStyle}">${it.qty}</td>
+      <td class="num br-col-total" style="${totalStyle}">&#8377;${(it.price*it.qty).toLocaleString('en-IN')}</td></tr>`).join('');
   let summary = `<div class="br-row" style="font-weight:700;"><span>Grand Total / மொத்தம்</span><span>&#8377;${s.subtotal.toLocaleString('en-IN')}</span></div>`;
   if(s.discount>0) summary += `<div class="br-row br-disc"><span>Discount / தள்ளுபடி (${s.discountPercent}%)</span><span>-&#8377;${s.discount.toLocaleString('en-IN')}</span></div>`;
   const cancelledNote = saleStatus(s)==='cancelled' ? '<div style="text-align:center;color:#000;font-weight:800;padding:6px 10px;border-top:1.5px dashed #000;">&#9888; ORDER CANCELLED</div>' : '';
   // Fixed 80mm width (226.772px) for thermal printer - height grows with items
-  return `<div class="br-page" style="width:226.772px;">
+  return `<div class="br-page" style="width:${pageWidthPx}px;">
       <div class="br-head">
         <div class="br-ta">${SHOP.name_ta}</div>
         <div style="font-size:10px; color:#000; margin-top:3px;">Branch: Thanneerpandhal &bull; Ph: 8760209888</div>
@@ -2932,11 +3078,11 @@ function buildBillReceiptHTML(s){
       </div>
       <div class="br-meta"><span>${dt}</span><span>Seller: ${s.sellerName}</span></div>
       <table class="br-table">
-        <thead><tr><th class="br-col-item" style="text-align:center;">Item</th><th class="num br-col-price">Price</th><th class="num br-col-qty">Qty</th><th class="num br-col-total">Total</th></tr></thead>
+        <thead><tr><th class="br-col-item" style="text-align:center;">Item</th><th class="num br-col-price" style="font-size:10px;">Price</th><th class="num br-col-qty" style="font-size:10px;">Qty</th><th class="num br-col-total" style="font-size:10px; padding-right:8px;">Total</th></tr></thead>
         <tbody>${rows}</tbody>
       </table>
       <div class="br-summary">${summary}</div>
-      <div class="br-total-row"><span>Paid Amount<br><span style="font-size:10px; font-weight:600;">செலுத்திய தொகை</span></span><span>${s.paymentMethod ? '<span style="font-size:9px; font-weight:600; color:#555;">('+(s.paymentMethod==='upi'?'UPI':'Cash')+')</span> ' : ''}&#8377;${(s.paidAmount||0).toLocaleString('en-IN')}</span></div>
+      <div class="br-total-row"><span>Paid Amount<br><span style="font-size:10px; font-weight:600;">செலுத்திய தொகை</span></span><span>${s.paymentMethod ? '<span style="font-size:9px; font-weight:600; color:#555;">('+paymentMethodLabel(s)+')</span> ' : ''}&#8377;${(s.paidAmount||0).toLocaleString('en-IN')}</span></div>
       <div style="padding:6px 10px 4px; font-size:8.5px; color:#000; text-align:center;">Note: Total is inclusive Tax : Wishing you a safe and happy celebration!</div>
       ${cancelledNote}
     </div>`;
@@ -3886,8 +4032,8 @@ function buildBankReportHTML(type, periodKey){
   const disc = inPeriod.reduce((a,s)=>a+(s.discount||0),0);
   const net = inPeriod.reduce((a,s)=>a+s.total,0);
   const bills = inPeriod.length;
-  const cash = inPeriod.filter(s=>s.paymentMethod!=='upi').reduce((a,s)=>a+s.total,0);
-  const upi = inPeriod.filter(s=>s.paymentMethod==='upi').reduce((a,s)=>a+s.total,0);
+  const cash = inPeriod.reduce((a,s)=>a+saleCashAmount(s),0);
+  const upi = inPeriod.reduce((a,s)=>a+saleUpiAmount(s),0);
   const inr = v => '&#8377;' + v.toLocaleString('en-IN');
 
   // Breakdown rows: per day (monthly) or per month (quarterly / yearly)
@@ -4270,7 +4416,7 @@ function renderAdmin(){
         let itemsHtml = s.items.map(it=>`<div><span>${it.en} x${it.qty}</span><span>₹${it.qty*it.price}</span></div>`).join('');
         if(s.discount>0) itemsHtml += `<div class="sd-disc"><span>Discount${s.discountPercent?' ('+s.discountPercent+'%)':''}</span><span>-₹${s.discount}</span></div>`;
         if(s.buyerPhone) itemsHtml += `<div><span>Customer Phone</span><span>${s.buyerPhone}</span></div>`;
-        if(s.paidAmount) itemsHtml += `<div><span>Paid Amount</span><span>₹${s.paidAmount.toLocaleString('en-IN')}${s.paymentMethod ? ' <span style="font-size:9px;color:#8a6a44;">('+(s.paymentMethod==='upi'?'UPI':'Cash')+')</span>' : ''}</span></div>`;
+        if(s.paidAmount) itemsHtml += `<div><span>Paid Amount</span><span>₹${s.paidAmount.toLocaleString('en-IN')}${s.paymentMethod ? ' <span style="font-size:9px;color:#8a6a44;">('+paymentMethodLabel(s)+')</span>' : ''}</span></div>`;
         const isNew = new Date(s.time).getTime() > lastSeen;
         html += `<div class="sale-card">
             <div class="sale-card-top" onclick="toggleSaleDetail('${s.id}')">
@@ -5403,8 +5549,8 @@ async function downloadSalesReportBankFormat(){
   const totalGross = valid.reduce((a,s)=>a+(s.subtotal||s.total),0);
   const totalDisc = valid.reduce((a,s)=>a+(s.discount||0),0);
   const totalNet = valid.reduce((a,s)=>a+s.total,0);
-  const cash = valid.filter(s=>s.paymentMethod!=='upi').reduce((a,s)=>a+s.total,0);
-  const upi = valid.filter(s=>s.paymentMethod==='upi').reduce((a,s)=>a+s.total,0);
+  const cash = valid.reduce((a,s)=>a+saleCashAmount(s),0);
+  const upi = valid.reduce((a,s)=>a+saleUpiAmount(s),0);
 
   // Period from actual min/max timestamps (never relies on array order)
   let periodLine = '';
